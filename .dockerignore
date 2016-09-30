@@ -1,0 +1,13 @@
+
+/.idea/
+/texts_viewer/data/
+/texts_viewer/libs/
+/node_modules/
+/texts_viewer/static/main.js
+/texts_viewer/static/main.scss
+/.gitmodules
+/.gitignore
+/conf.ini
+/package.json
+/webpack.config.js
+/.dockerignore

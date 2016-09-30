@@ -1,0 +1,3 @@
+[submodule "texts_viewer/libs/extractor"]
+	path = texts_viewer/libs/extractor
+	url = https://git.stacc.ee/project4/extractor.git

@@ -1,0 +1,276 @@
+<!--suppress HtmlUnknownTarget -->
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>texts_viewer</title>
+</head>
+<body id="app">
+{% raw %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="navbar-header">
+
+                    <button type="button" class="navbar-toggle" data-toggle="collapse"
+                            data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span
+                            class="icon-bar"></span><span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">text-viewer</a>
+                </div>
+
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a data-toggle="tab" href="#main">main</a></li>
+                        <li><a data-toggle="tab" href="#text_groups">text_groups</a></li>
+                        <li><a data-toggle="tab" href="#annotation">annotation</a></li>
+                        <li><a data-toggle="tab" href="#model_testing">model-testing</a></li>
+
+                    </ul>
+                </div>
+
+            </nav>
+        </div>
+    </div>
+
+    <div class="tab-content">
+
+        <div id="main" class="tab-pane active">
+
+
+            <div class="row">
+                <div class="col-md-3">
+
+
+                    <div class="form-group">
+
+
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search for..." v-model="message"
+                                   v-on:keydown.enter="test(message)">
+                            <span class="input-group-btn">
+        <button class="btn btn-secondary" type="button" v-on:click="test(message)">Go!</button></span>
+
+
+                        </div>
+
+
+                    </div>
+                    <button v-on:click="test(message - 1)">prev</button>
+                    <button v-on:click="test(parseInt(message) + 1)">next</button>
+
+
+                </div>
+                <div class="col-md-9">
+                    <div id="content">
+                        <p class="prewrap" id="event_text" v-cloak>{{ text }}</p>
+                    </div>
+
+                </div>
+                </p>
+            </div>
+
+        </div>
+        <div id="text_groups" class="tab-pane">
+            <div class="row">
+                <div class="col-md-3">
+                    Text groups
+                    <ul class="list-group" v-cloak>
+
+
+                        <li class="list-group-item clearfix" v-for="group in groups" v-on:click="show_group(group.name)"
+                            v-bind:class="{'active': group.name == active_group_name}">
+                            {{ group.name }}
+
+                            <div v-if="group.name == active_group_name">
+
+                                <button type="button" class="btn btn-secondary pull-right"
+                                        v-on:click="save_group(active_group_name)">
+                                    save
+                                </button>
+
+
+                                <button type="button" class="btn btn-danger pull-right"
+                                        v-on:click="delete_group(group.name)">
+                                    <span class="glyphicon glyphicon-remove"></span>Delete
+                                </button>
+                            </div>
+
+                        </li>
+                    </ul>
+                    <input type="text" v-model="new_group" v-on:keydown.enter="add_group">
+
+                </div>
+                <div class="col-md-9">
+
+                    <textarea class="form-control id_list" rows="50" v-model="group_contents"></textarea>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div id="annotation" class="tab-pane">
+            <div class="row">
+                <div class="col-md-3">
+                    <button class="btn btn-primary" type="button" v-on:click="get_groups()">update</button>
+                    <select class="form-control" v-on:change="update_texts" v-model="active_group_id">
+                        <option v-for="group in groups" value="{{ group.id }}">{{group.name}}</option>
+                    </select>
+
+
+                    <input type="text" class="form-control" v-on:keydown.enter="insert_name" v-model="new_regex_name">
+
+
+                    <div id="regex_marking" class="affix">
+                        <button class="btn btn-primary" type="button" v-on:click="mark_selection">mark</button>
+                        <div class="list-group regex_names">
+
+                            <a class="list-group-item" v-for="item in group.regex_names"
+                               v-on:click="activate_regex(item, $event)">{{item}}</a>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-9">
+
+
+                    <div id="annotation_texts">
+                        <div v-for="text in active_texts" class="annotation_texts_container">
+                        <!--<span v-if="table != ''"><h4>{{ text.table }} - {{ text.field }}</h4> text_id={{text.id}}, epi_id={{ text.epi_id }}-->
+                        </span>
+                            <p class="prewrap text" id="text_{{text.id}}" data-texts-id="{{text.id}}">{{ text.text
+                                }}</p>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+        <div id="model_testing" class="tab-pane">
+            <div class="alert alert-danger" v-if="error != ''">
+
+                {{error}}
+                <a href="#" class="close" data-dismiss="alert" aria-label="close" v-on:click="error = ''">&times;</a>
+            </div>
+
+            <div class="col-md-6">
+
+
+                <button class="btn btn-primary pull-right" v-on:click="save_model">save</button>
+
+                <div class="btn-group">
+
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                                v-on:click="get_model_names">
+                            <div v-if="current_model_name == ''">
+                                choose model
+                            </div>
+                            <div v-else>
+                                {{current_model_name}}
+                            </div>
+                            <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                            <li v-for="name in model_names"><a href="#"
+                                                               v-on:click="set_current_model(name)">{{name}}</a></li>
+                        </ul>
+                    </div>
+
+
+                    <input type="text" class="form-control" v-model="current_model_name">
+                </div>
+
+                <textarea class="form-control model" rows="50" v-model="current_model_text"
+                          v-on:keydown.enter="run_maybe($event)">
+
+
+                </textarea>
+
+            </div>
+
+            <div class="col-md-6">
+                <div v-if="active_group_id != -1 && current_model_name != ''">
+                    <button class="btn btn-primary pull-right" v-on:click="run_model_text">RUN</button>
+                </div>
+                <div v-else>
+                    <button class="btn btn-primary disabled pull-right" v-on:click="run_model_text">RUN</button>
+                </div>
+
+
+                <button class="btn btn-primary" type="button" v-on:click="get_groups()">update</button>
+                <select class="form-control" v-model="active_group_id" v-on:change="get_group">
+                    <option v-for="group in groups" value="{{ group.id }}">{{ group.name }}</option>
+                </select>
+
+                <button type="button" class="btn btn-primary filter"
+                        v-bind:class="{'nonactive' : !display_true_positives}"
+                        v-on:click="display_true_positives = !display_true_positives">true positives
+                </button>
+                <button type="button" class="btn btn-primary filter"
+                        v-bind:class="{'nonactive' : !display_false_positives}"
+                        v-on:click="display_false_positives = !display_false_positives">false positives
+                </button>
+                <button type="button" class="btn btn-primary filter"
+                        v-bind:class="{'nonactive' : !display_false_negatives}"
+                        v-on:click="display_false_negatives = !display_false_negatives">false negatives
+                </button>
+
+
+                <div id="results">
+                    <div>
+
+
+                        <div v-for="run_result in run_results">
+                            <h2>{{$key}}</h2>
+                            <div v-for="result in run_result">
+
+                                <div v-if="((display_true_positives && result.result_class == 'true_positive')
+                                    || (display_false_positives && result.result_class == 'false_positive')
+                                    || (display_false_negatives && result.result_class == 'false_negative'))">
+                                    <div
+                                            v-bind:class="{'true_positive': result.result_class == 'true_positive',
+                                         'false_positive': result.result_class == 'false_positive',
+                                         'false_negative': result.result_class == 'false_negative'
+                                          }" v-on:click="flip_true_false_positive(result)" class="extractor_result">
+
+                                        {{result.left_context}}<span class="match_region">{{result.content}}</span>{{result.right_context}}
+
+                                        <a href="#" class="close" data-dismiss="alert" aria-label="close"
+                                           v-on:click="delete_annotation(result)"
+                                           v-if="result.result_class == 'false_negative'">&times;</a>
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+{% endraw %}
+<script src="{{ url_for('static', filename='bundle/bundle.js') }}"></script>
+
+<!--<script src="http://localhost:8080/bundle.js"></script>-->
+</html>

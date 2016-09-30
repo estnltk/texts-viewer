@@ -1,0 +1,87 @@
+$green: #CCF4AF;
+$pink: #ffe6e1;
+$blue: #bedfff;
+$border: #9a182d;
+$alert_red: #FF4247;
+$true-positive: $green;
+$false-negative: $pink;
+$false-positive: #fff9d8;
+
+
+
+[v-cloak] {
+  display: none;
+}
+
+.prewrap {
+  white-space: pre-line;
+}
+
+.loaded_highlight {
+  background-color: $pink;
+  padding-top: 0.3%;
+  border: 1px solid darken($pink, 20%);
+}
+
+.loaded_highlight:hover {
+  background-color: darken($pink, 20%);
+  border: 1px solid lighten($pink, 20%);
+  transition: all 0.01s ease;
+}
+
+.manual_highlight {
+  background-color: $blue;
+  padding-top: 0.3%;
+}
+
+.annotation_texts_container {
+  border: solid $green;
+  border-width: 3px 0px 0px 0;
+}
+
+.event {
+  padding: 2%;
+  border: 0 solid $border;
+  border-bottom-width: 2px;
+}
+
+.id_list {
+  width: 25em;
+}
+
+.true_positive {
+  background-color: $true-positive;
+  cursor: pointer;
+}
+
+.false_positive {
+  background-color: $false-positive;
+  cursor: pointer;
+}
+
+.false_negative {
+  background-color: $false-negative;
+}
+
+.btn.filter.nonactive {
+  background: white;
+  color: black;
+}
+
+.extractor_result {
+  padding: 0.3em;
+  margin-top: -1px;
+  border: 1px solid #f8f8f8;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.match_region {
+  color: $alert_red;
+  font-weight: bold;
+  text-decoration: underline;
+
+}

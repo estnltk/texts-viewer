@@ -1,0 +1,8 @@
+marshmallow
+marshmallow-sqlalchemy
+pandas
+sqlalchemy
+flask
+#flask-restless
+configparser
+regex
