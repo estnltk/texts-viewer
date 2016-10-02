@@ -68,6 +68,7 @@ def to_dict(ob):
 
 @app.route('/get_texts_in_group/<string:name>', methods=['GET'])
 def get_texts_in_group(name):
+    texts = None
     for i, in db_session.query(models.TextGroup.texts).filter_by(name=name).all():
         texts = [int(i) for i in i.split('\n') if i]
 

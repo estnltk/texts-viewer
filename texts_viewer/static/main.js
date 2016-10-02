@@ -2,6 +2,7 @@
 
 var bootstrap_css = require('../../node_modules/bootstrap/dist/css/bootstrap.min.css');
 
+var superagent = require('superagent');
 
 var rangy = require('../../node_modules/rangy/lib/rangy-core.js');
 require('expose?$!expose?jQuery!../../node_modules/jquery/dist/jquery.js');
@@ -15,11 +16,22 @@ Vue.http.headers.post['Content-Type'] = 'application/vnd.api+json';
 var bootstrap = require('../../node_modules/bootstrap/dist/js/bootstrap.js');
 var main_css = require('./main.scss');
 
+var api_get = function (url) {
+    return superagent.get(url)
+        .accept('application/vnd.api+json')
+}
+
+var api_post = function (url, data) {
+    return superagent.post(url)
+        .send(data)
+        .accept('application/vnd.api+json')
+        .set('Content-Type', 'application/vnd.api+json')
+}
+
 
 var get_extracted_by_event_id = function (event_id) {
-    var resource = Vue.resource('events_id{/id}/extracted');
-    return resource.get({id: event_id}).then(
-        (response)=> JSON.parse(response.body).data.attributes.result,
+    return api_get({id: event_id}).then(
+        (response)=> response.body.data.attributes.result,
         (response)=>[]
     )
 };
@@ -76,27 +88,28 @@ var current = '';
 var main = new Vue({
         el: "#main",
         data: data,
-        created:function(){
+        created: function () {
             this.test(this.message)
 
         },
         methods: {
-
             set_text: function (text) {
-                var bindelem = '';
-                var dirs = this._directives;
-                for (var dir of dirs) {
-                    if (dir.expression == 'text') {
-                        bindelem = dir.el
-                    }
-                }
-
-                //cleanup hack
-                var element = $('#event_text');
-                for (var elem of element.contents()) {
-                    elem.remove()
-                }
-                element.append(bindelem);
+                // var bindelem = '';
+                // var dirs = this._directives;
+                //
+                // console.log(this)
+                // for (var dir of dirs) {
+                //     if (dir.expression == 'text') {
+                //         bindelem = dir.el
+                //     }
+                // }
+                //
+                // //cleanup hack
+                // var element = $('#event_text');
+                // for (var elem of element.contents()) {
+                //     elem.remove()
+                // }
+                // element.append(bindelem);
                 this.text = text
 
             },
@@ -106,13 +119,10 @@ var main = new Vue({
                     return
                 }
 
-                var resource = this.$resource('api/text{/id}');
                 var element = $('#event_text');
-
-
-                resource.get({id: message}).then(
+                api_get('api/text/' + message).then(
                     (response) => {
-                        this.set_text(JSON.parse(response.body).data.attributes.text);
+                        this.set_text(response.body.data.attributes.text);
                         current = message;
                     },
                     (response) => {
@@ -143,12 +153,24 @@ var text_groups = new Vue({
     "el": "#text_groups",
     "data": text_groups_data,
     "methods": {
-        "get_groups": function () {
-            this.$http.get('api/text_group').then(
-                (response) => {
 
-                    this.groups = JSON.parse(response.body).data.map(
-                        elem => elem.attributes)
+        "update": ()=> {
+        },
+
+        "get_groups": function () {
+            api_get('api/text_group').then(
+                (response) => {
+                    var groups = []
+                    for (var elem of response.body.data) {
+                        var nelem = elem.attributes
+                        nelem.id = elem.id
+                        groups.push(
+                            nelem
+                        )
+                    }
+
+                    this.groups = groups
+
                 },
                 (response) => {
                     // error
@@ -160,7 +182,7 @@ var text_groups = new Vue({
         "add_group": function () {
             if (this.new_group.length > 1) {
 
-                this.$http.post('api/text_group', {
+                api_post('api/text_group', {
                     data: {
                         'name': this.new_group,
                         'texts': this.group_contents,
@@ -186,10 +208,10 @@ var text_groups = new Vue({
             }
         },
         "show_group": function (name) {
-            this.$http.get('api/text_group/' + name).then(
+            api_get('api/text_group/' + name).then(
                 (response) => {
                     this.active_group_name = name;
-                    this.group_contents = JSON.parse(response.body).data.attributes.texts
+                    this.group_contents = response.body.data.attributes.texts
                 },
                 (response) => {
                     // error
@@ -251,12 +273,24 @@ var annotation = new Vue({
     "data": annotation_data,
     "methods": {
 
+        "update": ()=> {
+            this.get_groups()
 
+        },
         "get_groups": function () {
-            this.$http.get('api/text_group').then(
+            api_get('api/text_group').then(
                 (response) => {
-                    this.groups = JSON.parse(response.body).data.map(
-                        elem => elem.attributes)
+                    var groups = []
+                    for (var elem of response.body.data) {
+                        var nelem = elem.attributes
+                        nelem.id = elem.id
+                        groups.push(
+                            nelem
+                        )
+                    }
+
+                    this.groups = groups
+
                 },
                 (response) => {
                     // error
@@ -268,19 +302,23 @@ var annotation = new Vue({
 
         "update_texts": function () {
 
-            this.$http.get('api/text_group/' + this.active_group_id).then(
+            if (this.active_group_id == undefined) {
+                return
+            }
+            api_get('api/text_group/' + this.active_group_id).then(
                 (response) => {
                     this.active_regex = '';
-                    this.group = JSON.parse(response.body).data.attributes
+                    this.group = response.body.data.attributes;
+                    this.group.id = response.body.data.id
                 },
                 (response) => {
                     // error
                 });
 
 
-            this.$http.get('get_texts_in_group/' + this.active_group_id).then(
+            api_get('get_texts_in_group/' + this.active_group_id).then(
                 (response) => {
-                    this.active_texts = (response.body);
+                    this.active_texts = response.body;
                     var x = this;
 
                     Vue.nextTick(function () {
@@ -307,7 +345,7 @@ var annotation = new Vue({
 
         },
         "insert_name": function () {
-            this.$http.post('add_regex_name', {
+            api_post('add_regex_name', {
                 group_id: this.active_group_id,
                 regex_name: this.new_regex_name,
             }).then(
@@ -366,7 +404,7 @@ var annotation = new Vue({
                 var end = bm.end - sbm.start;
 
 
-                this.$http.post('save_annotation', {
+                api_post('save_annotation', {
                     'start': start,
                     'regex_name': this.active_regex,
                     'end': end,
@@ -421,7 +459,7 @@ var model_testing = new Vue({
 
         "flip_true_false_positive": function (item) {
             if (item.result_class == 'false_positive') {
-                this.$http.post('save_annotation', {
+                api_post('save_annotation', {
                     'start': item.start,
                     'regex_name': item.regex_name,
                     'end': item.end,
@@ -430,10 +468,9 @@ var model_testing = new Vue({
                     'text': item.content,
                 }).then(
                     (response) => {
-
-
                         item.result_class = 'true_positive';
-                        item.id = response.data.id
+                        item.id = response.body.id
+
                     },
                     (response) => {
                     })
@@ -455,7 +492,7 @@ var model_testing = new Vue({
             var model_name = this.current_model_name;
             var model_text = this.current_model_text;
 
-            this.$http.post(('save_model_version/' + model_name),
+            api_post(('save_model_version/' + model_name),
                 {'text': model_text}).then(
                 (response) => {
 
@@ -472,7 +509,7 @@ var model_testing = new Vue({
             var text = this.current_model_text;
             var group_id = this.active_group_id;
 
-            this.$http.post('run_model_text',
+            api_post('run_model_text',
                 {
                     group_id: group_id,
                     model_text: text
@@ -489,9 +526,9 @@ var model_testing = new Vue({
         },
 
         'get_model': function (name) {
-            this.$http.get('get_model/' + name).then(
+            api_get('get_model/' + name).then(
                 (response) => {
-                    this.models = JSON.parse(response.body).data.attributes
+                    this.models = (response.body).data.attributes
                 },
                 (response) => {
                     // error
@@ -501,7 +538,7 @@ var model_testing = new Vue({
 
         },
         "get_model_names": function () {
-            this.$http.get('get_model_names').then(
+            api_get('get_model_names').then(
                 (response) => {
                     this.model_names = (response.body.data.attributes.result)
                 },
@@ -512,7 +549,7 @@ var model_testing = new Vue({
 
         "set_current_model": function (name) {
             this.current_model_name = name;
-            this.$http.get('get_model/' + name).then(
+            api_get('get_model/' + name).then(
                 (response) => {
                     this.models = response.body;
                     this.current_model_text = response.body.text;
@@ -526,9 +563,14 @@ var model_testing = new Vue({
         },
 
         'get_group': function () {
-            this.$http.get('api/text_group/' + this.active_group_id).then(
+            if (this.active_group_id == -1 || this.active_group.id == undefined) {
+                return
+            }
+            api_get('api/text_group/' + this.active_group_id).then(
                 (response) => {
-                    this.active_group = JSON.parse(response.body).data.attributes
+                    this.active_group = response.body.data.attributes
+                    this.active_group.id = response.body.id
+                    this.active_group_id = response.body.id
                 },
                 (response) => {
                     // error
@@ -540,7 +582,10 @@ var model_testing = new Vue({
         "delete_annotation": function (item) {
             this.$http.delete('api/span/' + item.id).then(
                 (response) => {
-                    this.run_results[item.regex_name].$remove(item)
+
+                    var index = this.run_results[item.regex_name].indexOf(item)
+                    this.run_results[item.regex_name].splice(index, 1)
+
                 },
                 (response) => {
                     // error
@@ -550,10 +595,19 @@ var model_testing = new Vue({
 
 
         "get_groups": function () {
-            this.$http.get('api/text_group').then(
+            api_get('api/text_group').then(
                 (response) => {
-                    this.groups = JSON.parse(response.body).data.map(
-                        elem => elem.attributes)
+                    var groups = []
+                    for (var elem of response.body.data) {
+                        var nelem = elem.attributes
+                        nelem.id = elem.id
+                        groups.push(
+                            nelem
+                        )
+                    }
+
+                    this.groups = groups
+
                 },
                 (response) => {
                     // error

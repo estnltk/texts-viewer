@@ -22,10 +22,10 @@
 
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
-                        <li class="active"><a data-toggle="tab" href="#main">main</a></li>
-                        <li><a data-toggle="tab" href="#text_groups">text_groups</a></li>
-                        <li><a data-toggle="tab" href="#annotation">annotation</a></li>
-                        <li><a data-toggle="tab" href="#model_testing">model-testing</a></li>
+                        <li class="active"><a data-toggle="tab" href="#main" v-on:click="update">main</a></li>
+                        <li><a data-toggle="tab" href="#text_groups" v-on:click="update">text_groups</a></li>
+                        <li><a data-toggle="tab" href="#annotation" v-on:click="update">annotation</a></li>
+                        <li><a data-toggle="tab" href="#model_testing" v-on:click="update">model-testing</a></li>
 
                     </ul>
                 </div>
@@ -115,8 +115,8 @@
             <div class="row">
                 <div class="col-md-3">
                     <button class="btn btn-primary" type="button" v-on:click="get_groups()">update</button>
-                    <select class="form-control" v-on:change="update_texts" v-model="active_group_id">
-                        <option v-for="group in groups" value="{{ group.id }}">{{group.name}}</option>
+                    <select class="form-control" v-model="active_group_id" v-on:change="update_texts" >
+                        <option v-for="group in groups" :value="group.id" >{{group.name}}</option>
                     </select>
 
 
@@ -140,7 +140,7 @@
                         <div v-for="text in active_texts" class="annotation_texts_container">
                         <!--<span v-if="table != ''"><h4>{{ text.table }} - {{ text.field }}</h4> text_id={{text.id}}, epi_id={{ text.epi_id }}-->
                         </span>
-                            <p class="prewrap text" id="text_{{text.id}}" data-texts-id="{{text.id}}">{{ text.text
+                            <p class="prewrap text" :id="'text_'+text.id" :data-texts-id="text.id">{{ text.text
                                 }}</p>
 
 
@@ -206,7 +206,7 @@
 
                 <button class="btn btn-primary" type="button" v-on:click="get_groups()">update</button>
                 <select class="form-control" v-model="active_group_id" v-on:change="get_group">
-                    <option v-for="group in groups" value="{{ group.id }}">{{ group.name }}</option>
+                    <option v-for="group in groups" :value="group.id">{{ group.name }}</option>
                 </select>
 
                 <button type="button" class="btn btn-primary filter"
@@ -225,10 +225,8 @@
 
                 <div id="results">
                     <div>
-
-
-                        <div v-for="run_result in run_results">
-                            <h2>{{$key}}</h2>
+                        <div v-for="(run_result, key, index) in run_results">
+                            <h2>{{key}}</h2>
                             <div v-for="result in run_result">
 
                                 <div v-if="((display_true_positives && result.result_class == 'true_positive')
