@@ -310,38 +310,39 @@ var annotation = new Vue({
                     this.active_regex = '';
                     this.group = response.body.data.attributes;
                     this.group.id = response.body.data.id
+                    api_get('get_texts_in_group/' + this.active_group_id).then(
+                        (response) => {
+                            this.active_texts = response.body;
+                            var x = this;
+
+                            Vue.nextTick(function () {
+                                    // HIGHLIGHTING ALREADY MARKED SPANS
+                                    x.$http.get('get_annotations_in_group/' + x.active_group_id).then(
+                                        (response) => {
+                                            for (var span of (response.body)) {
+                                                var parent = $('#text_' + span.text_id);
+                                                highlightCharacterRange(parent,
+                                                    span.start,
+                                                    span.end, 'loaded_highlight', 'span');
+                                            }
+                                        },
+                                        (response) => {
+                                            // error
+                                        }
+                                    )
+                                }
+                            )
+                        },
+                        (response) => {
+                            // error
+                        })
+
                 },
                 (response) => {
                     // error
                 });
 
 
-            api_get('get_texts_in_group/' + this.active_group_id).then(
-                (response) => {
-                    this.active_texts = response.body;
-                    var x = this;
-
-                    Vue.nextTick(function () {
-                            // HIGHLIGHTING ALREADY MARKED SPANS
-                            x.$http.get('get_annotations_in_group/' + x.active_group_id).then(
-                                (response) => {
-                                    for (var span of (response.body)) {
-                                        var parent = $('#text_' + span.text_id);
-                                        highlightCharacterRange(parent,
-                                            span.start,
-                                            span.end, 'loaded_highlight', 'span');
-                                    }
-                                },
-                                (response) => {
-                                    // error
-                                }
-                            )
-                        }
-                    )
-                },
-                (response) => {
-                    // error
-                })
 
         },
         "insert_name": function () {

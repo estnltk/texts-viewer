@@ -198,7 +198,9 @@ def run_model_text():
     if grp['data']['attributes']['texts']:
         txts = [
             to_dict(i) for i in
-            db_session.query(models.Text).filter(models.Text.id.in_(grp['data']['attributes']['texts']))]
+            db_session.query(models.Text).filter(
+
+                models.Text.id.in_([int(i) for i in (grp['data']['attributes']['texts'].split("\n")) if (i.strip())] ))]
     else:
         txts = []
 
