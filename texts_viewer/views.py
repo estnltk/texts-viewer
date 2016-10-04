@@ -1,12 +1,12 @@
 import json
 
 import pandas as pd
-import regex as re
 from flask import render_template, jsonify
 from flask import request
 
 from texts_viewer import app,  models
 from texts_viewer.database import db_session
+from texts_viewer.extractor import SimpleExtractor
 
 
 @app.route('/', methods=['GET'])
@@ -147,38 +147,6 @@ def classify(i, trues):
         return 'true_positive'
     else:
         return 'false_positive'
-
-
-class SimpleExtractor:
-    def __init__(self, model_text):
-        self._model_text = model_text
-
-    def extract(self, text):
-        regexes = json.loads(self._model_text)['regexes']
-        res = []
-        for item in regexes:
-            name = item['name']
-            regex = item['regex']
-            for result in re.finditer(regex, text['text']):
-                start, end = result.span()
-                res.append({'start': start,
-                            'end': end,
-                            'content': text['text'][start:end],
-                            'text_id': text['id'],
-                            'left_context': text['text'][max(0, start - 32):start],
-                            'right_context': text['text'][end:min(end + 32, len(text['text']))],
-                            'regex_name': name,
-                            'groups': result.groupdict()
-                            })
-        return res
-
-    def extract_many(self, texts):
-        res = []
-
-        for text in texts:
-            res.append(self.extract(text))
-
-        return res
 
 
 @app.route('/run_model_text', methods=['POST'])
