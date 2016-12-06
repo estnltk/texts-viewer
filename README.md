@@ -1,5 +1,12 @@
 # texts_viewer
 
+## Features
+
+## Use cases
+
+
+## Installation
+
 
 to build:
 
@@ -20,4 +27,9 @@ or
 
     export FLASK_APP=texts_viewer/main.py
     flask run
+
+
+## Screenshots
+
+TODO
 
