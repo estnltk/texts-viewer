@@ -1,8 +1,16 @@
-# texts_viewer
+# Texts-viewer
+
+Texts-viewer is a web tool which allows for iterative pattern-based fact extractor developent with built-in regression tests.
 
 ## Features
 
+* Texts-viewer helps define sub-corpora from a larger corpus
+* enables user to interactively define regions of interest within documents
+* enables running pattern-matching tools and test the results against defined regions of interest
+
 ## Use cases
+
+* develop fact-extraction tools with automatic regression tests
 
 
 ## Installation
